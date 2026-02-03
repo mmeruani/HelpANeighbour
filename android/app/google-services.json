@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "643827394826",
+    "project_id": "helpaneighbour-bb285",
+    "storage_bucket": "helpaneighbour-bb285.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:643827394826:android:e0958c4e2d0b191e89f2f3",
+        "android_client_info": {
+          "package_name": "ru.hse.helpneighbour"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDIa-4RxqqV3kNF5e7-5B5baCoDxVF3pAw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
