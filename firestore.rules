@@ -1,0 +1,292 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isCommunityMember(communityId) {
+      return isSignedIn() &&
+        exists(
+          /databases/$(database)/documents/community_members/$(communityId + "_" + request.auth.uid)
+        );
+    }
+
+    function isCommunityCreator(communityId) {
+      return isSignedIn() &&
+        get(/databases/$(database)/documents/communities/$(communityId)).data.creatorId == request.auth.uid;
+    }
+
+    function requestDoc(requestId) {
+      return get(/databases/$(database)/documents/requests/$(requestId));
+    }
+
+    function isRequestCustomer(requestId) {
+      return isSignedIn() &&
+        requestDoc(requestId).data.customerId == request.auth.uid;
+    }
+
+    function canReadRequestResource() {
+      return isSignedIn() && (
+        resource.data.customerId == request.auth.uid ||
+        resource.data.executorId == request.auth.uid ||
+        isCommunityMember(resource.data.communityId)
+      );
+    }
+
+    function requestCommunityId(requestId) {
+      return requestDoc(requestId).data.communityId;
+    }
+
+    function canReadRequestResponse() {
+      return isSignedIn() && (
+        resource.data.executorId == request.auth.uid ||
+        isRequestCustomer(resource.data.requestId) ||
+        isCommunityMember(requestDoc(resource.data.requestId).data.communityId)
+      );
+    }
+
+    function userCreateKeysAreValid() {
+      return request.resource.data.keys().hasOnly([
+        "email",
+        "phone",
+        "phoneVariants",
+        "name",
+        "avatarUrl",
+        "bio",
+        "rating",
+        "completedServicesCount",
+        "reviewsCount",
+        "communityIds",
+        "createdAt"
+      ]);
+    }
+
+    function userUpdateKeysAreValid() {
+      return request.resource.data.diff(resource.data).changedKeys().hasOnly([
+        "name",
+        "avatarUrl",
+        "bio",
+        "communityIds"
+      ]);
+    }
+
+    function userAggregateUpdateKeysAreValid() {
+      return request.resource.data.diff(resource.data).changedKeys().hasOnly([
+        "rating",
+        "reviewsCount",
+        "completedServicesCount"
+      ]) &&
+        (!request.resource.data.diff(resource.data).changedKeys().hasAny(["rating"]) ||
+          (
+            request.resource.data.rating is number &&
+            request.resource.data.rating >= 0 &&
+            request.resource.data.rating <= 5
+          )) &&
+        (!request.resource.data.diff(resource.data).changedKeys().hasAny(["reviewsCount"]) ||
+          (
+            request.resource.data.reviewsCount is int &&
+            request.resource.data.reviewsCount >= 0
+          )) &&
+        (!request.resource.data.diff(resource.data).changedKeys().hasAny(["completedServicesCount"]) ||
+          (
+            request.resource.data.completedServicesCount is int &&
+            request.resource.data.completedServicesCount >= 0
+          ));
+    }
+
+    function publicUserUpdateKeysAreValid() {
+      return request.resource.data.diff(resource.data).changedKeys().hasOnly([
+        "name",
+        "avatarUrl",
+        "bio",
+        "communityIds"
+      ]);
+    }
+
+    function notificationUpdateIsValid() {
+      return request.resource.data.diff(resource.data).changedKeys().hasOnly([
+          "isRead",
+          "readAt"
+        ]) &&
+        request.resource.data.recipientUserId == resource.data.recipientUserId &&
+        request.resource.data.title == resource.data.title &&
+        request.resource.data.body == resource.data.body &&
+        request.resource.data.targetRoute == resource.data.targetRoute &&
+        request.resource.data.createdAt == resource.data.createdAt;
+    }
+
+    function notificationCreateIsValid() {
+      return request.resource.data.keys().hasOnly([
+          "recipientUserId",
+          "title",
+          "body",
+          "targetRoute",
+          "isRead",
+          "createdAt"
+        ]) &&
+        request.resource.data.recipientUserId is string &&
+        request.resource.data.title is string &&
+        request.resource.data.body is string &&
+        request.resource.data.targetRoute is string &&
+        request.resource.data.isRead == false;
+    }
+
+    function communityMemberRoleTransferIsValid() {
+      return request.resource.data.diff(resource.data).changedKeys().hasOnly(["role"]) &&
+        request.resource.data.communityId == resource.data.communityId &&
+        request.resource.data.userId == resource.data.userId &&
+        (
+          request.resource.data.role == "creator" ||
+          request.resource.data.role == "participant"
+        );
+    }
+
+    function communityMembersCountUpdateIsValid() {
+      return request.resource.data.diff(resource.data).changedKeys().hasOnly(["membersCount"]) &&
+        request.resource.data.membersCount is int &&
+        request.resource.data.membersCount >= 0;
+    }
+
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) && userCreateKeysAreValid();
+      allow update: if
+        (isOwner(userId) && userUpdateKeysAreValid()) ||
+        (isSignedIn() && userAggregateUpdateKeysAreValid());
+      allow delete: if false;
+
+      match /notification_settings/{documentId} {
+        allow read: if isSignedIn();
+        allow write: if isOwner(userId);
+      }
+
+      match /device_tokens/{tokenId} {
+        allow read, write, delete: if isOwner(userId);
+      }
+    }
+
+    match /public_users/{userId} {
+      allow read: if isSignedIn();
+      allow create: if isOwner(userId);
+      allow update: if
+        (isOwner(userId) && publicUserUpdateKeysAreValid()) ||
+        (isSignedIn() && userAggregateUpdateKeysAreValid());
+      allow delete: if false;
+    }
+
+    match /phone_auth_index/{phoneId} {
+      allow get: if true;
+      allow list: if false;
+      allow create: if isSignedIn() &&
+        request.resource.data.userId == request.auth.uid;
+      allow update: if isSignedIn() &&
+        resource.data.userId == request.auth.uid &&
+        request.resource.data.userId == request.auth.uid;
+      allow delete: if false;
+    }
+
+    match /notifications/{notificationId} {
+      allow read: if isSignedIn() &&
+        resource.data.recipientUserId == request.auth.uid;
+      allow update: if isSignedIn() &&
+        resource.data.recipientUserId == request.auth.uid &&
+        notificationUpdateIsValid();
+      allow create: if isSignedIn() && notificationCreateIsValid();
+      allow delete: if false;
+    }
+
+    match /activity_events/{eventId} {
+      allow read: if isSignedIn() &&
+        resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() &&
+        request.resource.data.userId == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    match /community_members/{memberId} {
+      allow read: if isSignedIn() &&
+        (
+          resource.data.userId == request.auth.uid ||
+          isCommunityMember(resource.data.communityId)
+        );
+      allow create: if isSignedIn() &&
+        (
+          request.resource.data.userId == request.auth.uid ||
+          isCommunityCreator(request.resource.data.communityId)
+        );
+      allow update: if isSignedIn() &&
+        isCommunityCreator(resource.data.communityId) &&
+        communityMemberRoleTransferIsValid();
+      allow delete: if isSignedIn() &&
+        (
+          resource.data.userId == request.auth.uid ||
+          isCommunityCreator(resource.data.communityId)
+        );
+    }
+
+    match /communities/{communityId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if
+        isCommunityCreator(communityId) ||
+        (isSignedIn() && communityMembersCountUpdateIsValid());
+      allow delete: if isCommunityCreator(communityId);
+    }
+
+    match /requests/{requestId} {
+      allow read: if canReadRequestResource();
+      allow create: if isSignedIn() &&
+        request.resource.data.customerId == request.auth.uid &&
+        isCommunityMember(request.resource.data.communityId);
+      allow update: if isSignedIn() &&
+        isCommunityMember(resource.data.communityId) &&
+        (
+          resource.data.customerId == request.auth.uid ||
+          resource.data.executorId == request.auth.uid
+        );
+      allow delete: if isSignedIn() &&
+        (
+          (
+            resource.data.customerId == request.auth.uid &&
+            (
+              resource.data.status == "completed" ||
+              resource.data.status == "cancelled"
+            )
+          ) ||
+          isCommunityCreator(resource.data.communityId)
+        );
+    }
+
+    match /request_responses/{responseId} {
+      allow read: if canReadRequestResponse();
+      allow create: if isSignedIn() &&
+        request.resource.data.executorId == request.auth.uid &&
+        isCommunityMember(requestDoc(request.resource.data.requestId).data.communityId) &&
+        requestDoc(request.resource.data.requestId).data.customerId != request.auth.uid;
+      allow update: if false;
+      allow delete: if isSignedIn() &&
+        (
+          resource.data.executorId == request.auth.uid ||
+          isCommunityCreator(requestCommunityId(resource.data.requestId))
+        );
+    }
+
+    match /reviews/{reviewId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() &&
+        request.resource.data.customerId == request.auth.uid &&
+        isRequestCustomer(request.resource.data.requestId) &&
+        requestDoc(request.resource.data.requestId).data.status == "completed";
+      allow update: if false;
+      allow delete: if isSignedIn() &&
+        isCommunityCreator(requestCommunityId(resource.data.requestId));
+    }
+
+  }
+}

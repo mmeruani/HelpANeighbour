@@ -1,4 +1,4 @@
-package ru.hse.helpneighbour.help_a_neighbour
+package ru.hse.helpneighbour
 
 import io.flutter.embedding.android.FlutterActivity
 

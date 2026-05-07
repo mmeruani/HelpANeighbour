@@ -14,4 +14,4 @@ class SecureStorage {
   Future<void> deleteToken() => _storage.delete(key: _tokenKey);
 }
 
-final secureStorage = SecureStorage(const FlutterSecureStorage());
+const secureStorage = SecureStorage(FlutterSecureStorage());

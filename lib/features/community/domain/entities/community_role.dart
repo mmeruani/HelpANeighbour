@@ -1,0 +1,4 @@
+enum CommunityRole {
+  creator,
+  participant,
+}

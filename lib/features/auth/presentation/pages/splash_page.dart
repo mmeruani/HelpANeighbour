@@ -1,19 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
-class SplashPage extends StatefulWidget {
+class SplashPage extends StatelessWidget {
   const SplashPage({super.key});
-
-  @override
-  State<SplashPage> createState() => _SplashPageState();
-}
-
-class _SplashPageState extends State<SplashPage> {
-  @override
-  void initState() {
-    super.initState();
-    Future.microtask(() => context.go('/login'));
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,4 +10,3 @@ class _SplashPageState extends State<SplashPage> {
     );
   }
 }
-

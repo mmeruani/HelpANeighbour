@@ -10,6 +10,15 @@ coverage/
 .flutter-plugins-dependencies
 .metadata
 
+# Local dependency folders and package-manager noise
+node_modules/
+functions/node_modules/
+functions/lib/
+functions/.runtimeconfig.json
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
 .idea/
 .vscode/
 *.iml
@@ -29,8 +38,58 @@ ios/Flutter/App.framework
 ios/Flutter/Generated.xcconfig
 ios/Flutter/ephemeral/
 ios/Runner/GeneratedPluginRegistrant.*
+ios/Pods/
+ios/Podfile.lock
+ios/DerivedData/
+ios/Flutter/flutter_export_environment.sh
+ios/Flutter/Generated.xcconfig
+ios/Flutter/ephemeral/
+ios/Runner.xcworkspace/xcuserdata/
+ios/Runner.xcodeproj/xcuserdata/
+ios/Runner.xcodeproj/project.xcworkspace/xcuserdata/
+ios/**/*.mode1v3
+ios/**/*.mode2v3
+ios/**/*.moved-aside
+ios/**/*.pbxuser
+ios/**/*.perspectivev3
 
 firebase-debug.log
 **/firebase-debug.log
+firestore-debug.log
+ui-debug.log
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+*.env
+*.local
+local.properties
+key.properties
+*.keystore
+*.jks
 
 .DS_Store
+.AppleDouble
+.LSOverride
+
+# OS/editor caches
+*.swp
+*.swo
+*~
+.swift-module-cache/
+
+# Generated docs, intermediate artifacts, and local exports
+outputs/
+tools/
+*.docx
+*.xlsx
+*.xls
+*.pdf
+*.pptx
+*.zip
+*.tar
+*.tar.gz
+*.rar
+corrected_sources_pz.md
+tzfinal.pdf
