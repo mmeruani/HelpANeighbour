@@ -71,8 +71,13 @@ final firebaseAuthProvider = Provider<FirebaseAuth>((ref) {
   return FirebaseAuth.instance;
 });
 
+final authUserProvider = StreamProvider<User?>((ref) {
+  return ref.watch(firebaseAuthProvider).authStateChanges();
+});
+
 final currentUserIdProvider = Provider<String?>((ref) {
-  return ref.watch(firebaseAuthProvider).currentUser?.uid;
+  final authUser = ref.watch(authUserProvider);
+  return authUser.valueOrNull?.uid;
 });
 
 final firebaseFirestoreProvider = Provider<FirebaseFirestore>((ref) {

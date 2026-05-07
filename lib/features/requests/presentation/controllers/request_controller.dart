@@ -30,6 +30,8 @@ class RequestState {
   });
 
   static const _errorSentinel = Object();
+  static const _selectedRequestSentinel = Object();
+  static const _responsesSentinel = Object();
 
   RequestState copyWith({
     bool? loading,
@@ -37,8 +39,8 @@ class RequestState {
     List<ServiceRequest>? communityRequests,
     List<ServiceRequest>? myRequests,
     List<ServiceRequest>? executorHistory,
-    ServiceRequest? selectedRequest,
-    List<RequestResponse>? responses,
+    Object? selectedRequest = _selectedRequestSentinel,
+    Object? responses = _responsesSentinel,
   }) {
     return RequestState(
       loading: loading ?? this.loading,
@@ -46,8 +48,12 @@ class RequestState {
       communityRequests: communityRequests ?? this.communityRequests,
       myRequests: myRequests ?? this.myRequests,
       executorHistory: executorHistory ?? this.executorHistory,
-      selectedRequest: selectedRequest ?? this.selectedRequest,
-      responses: responses ?? this.responses,
+      selectedRequest: identical(selectedRequest, _selectedRequestSentinel)
+          ? this.selectedRequest
+          : selectedRequest as ServiceRequest?,
+      responses: identical(responses, _responsesSentinel)
+          ? this.responses
+          : responses as List<RequestResponse>,
     );
   }
 }
@@ -132,7 +138,12 @@ class RequestController extends StateNotifier<RequestState> {
   }
 
   Future<void> loadRequestDetails(String requestId) async {
-    state = state.copyWith(loading: true, error: null);
+    state = state.copyWith(
+      loading: true,
+      error: null,
+      selectedRequest: null,
+      responses: const <RequestResponse>[],
+    );
     try {
       final request = await _repository.getRequestDetails(requestId);
       final responses = await _repository.getRequestResponses(requestId);
