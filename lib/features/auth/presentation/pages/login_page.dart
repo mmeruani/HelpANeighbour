@@ -161,7 +161,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Будьте уважительны ко всем пользователям, ведь основа этого сервиса - поддержка и взаимопощь.',
+                  'Будьте уважительны ко всем пользователям, ведь основа этого сервиса - поддержка и взаимопомощь',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),

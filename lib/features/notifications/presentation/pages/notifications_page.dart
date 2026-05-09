@@ -81,15 +81,9 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage> {
                           ? Icons.notifications_none_outlined
                           : Icons.notifications_active_outlined,
                     ),
-                    title: Text(
-                      notification.title,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                    title: Text(notification.title),
                     subtitle: Text(
                       '${notification.body}\n${_formatNotificationDate(notification.createdAt)}',
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ),

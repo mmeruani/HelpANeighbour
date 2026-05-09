@@ -15,6 +15,7 @@ class AppPageHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final normalizedSubtitle = _withoutTrailingDot(subtitle);
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -22,10 +23,7 @@ class AppPageHeader extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            theme.colorScheme.primaryContainer,
-            Colors.white,
-          ],
+          colors: [theme.colorScheme.primaryContainer, Colors.white],
         ),
         borderRadius: BorderRadius.circular(28),
         border: Border.all(
@@ -42,9 +40,7 @@ class AppPageHeader extends StatelessWidget {
                 Text(title, style: theme.textTheme.headlineSmall),
                 const SizedBox(height: 8),
                 Text(
-                  subtitle,
-                  maxLines: 4,
-                  overflow: TextOverflow.ellipsis,
+                  normalizedSubtitle,
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                     height: 1.4,
@@ -53,10 +49,7 @@ class AppPageHeader extends StatelessWidget {
               ],
             ),
           ),
-          if (trailing != null) ...[
-            const SizedBox(width: 16),
-            trailing!,
-          ],
+          if (trailing != null) ...[const SizedBox(width: 16), trailing!],
         ],
       ),
     );
@@ -104,26 +97,23 @@ class AppSectionTitle extends StatelessWidget {
   final String title;
   final String? subtitle;
 
-  const AppSectionTitle({
-    super.key,
-    required this.title,
-    this.subtitle,
-  });
+  const AppSectionTitle({super.key, required this.title, this.subtitle});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final normalizedSubtitle = subtitle == null
+        ? null
+        : _withoutTrailingDot(subtitle!);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(title, style: theme.textTheme.titleLarge),
-        if (subtitle != null) ...[
+        if (normalizedSubtitle != null) ...[
           const SizedBox(height: 6),
           Text(
-            subtitle!,
-            maxLines: 3,
-            overflow: TextOverflow.ellipsis,
+            normalizedSubtitle,
             style: theme.textTheme.bodyMedium?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
             ),
@@ -132,4 +122,12 @@ class AppSectionTitle extends StatelessWidget {
       ],
     );
   }
+}
+
+String _withoutTrailingDot(String value) {
+  final trimmedRight = value.trimRight();
+  if (!trimmedRight.endsWith('.')) {
+    return value;
+  }
+  return trimmedRight.substring(0, trimmedRight.length - 1);
 }

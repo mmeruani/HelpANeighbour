@@ -29,7 +29,9 @@ Future<String?> showSingleServiceCategoryPicker(
                 Text(title, style: theme.textTheme.titleLarge),
                 const SizedBox(height: 8),
                 Text(
-                  'Выберите категорию, чтобы соседям было легче найти и отфильтровать запрос.',
+                  _withoutTrailingDot(
+                    'Выберите категорию, чтобы соседям было легче найти и отфильтровать запрос.',
+                  ),
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                   ),
@@ -89,66 +91,66 @@ class ServiceCategoryField extends FormField<String> {
     super.validator,
     ValueChanged<String?>? onChanged,
   }) : super(
-          builder: (field) {
-            final theme = Theme.of(field.context);
-            final selectedCategory = ServiceCategories.byTitle(field.value);
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                InkWell(
-                  borderRadius: BorderRadius.circular(20),
-                  onTap: () async {
-                    final selected = await showSingleServiceCategoryPicker(
-                      field.context,
-                      selectedTitle: field.value,
-                    );
-                    if (selected == null) {
-                      return;
-                    }
-                    field.didChange(selected);
-                    onChanged?.call(selected);
-                  },
-                  child: InputDecorator(
-                    decoration: InputDecoration(
-                      labelText: label,
-                      errorText: field.errorText,
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            field.value?.isNotEmpty == true
-                                ? field.value!
-                                : hintText,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: field.value?.isNotEmpty == true
-                                ? theme.textTheme.bodyLarge
-                                : theme.textTheme.bodyLarge?.copyWith(
-                                    color: theme.colorScheme.onSurfaceVariant,
-                                  ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        const Icon(Icons.expand_more_rounded),
-                      ],
-                    ),
-                  ),
-                ),
-                if (selectedCategory != null) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    selectedCategory.examples,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                      height: 1.35,
-                    ),
-                  ),
-                ],
-              ],
-            );
-          },
-        );
+         builder: (field) {
+           final theme = Theme.of(field.context);
+           final selectedCategory = ServiceCategories.byTitle(field.value);
+           return Column(
+             crossAxisAlignment: CrossAxisAlignment.start,
+             children: [
+               InkWell(
+                 borderRadius: BorderRadius.circular(20),
+                 onTap: () async {
+                   final selected = await showSingleServiceCategoryPicker(
+                     field.context,
+                     selectedTitle: field.value,
+                   );
+                   if (selected == null) {
+                     return;
+                   }
+                   field.didChange(selected);
+                   onChanged?.call(selected);
+                 },
+                 child: InputDecorator(
+                   decoration: InputDecoration(
+                     labelText: label,
+                     errorText: field.errorText,
+                   ),
+                   child: Row(
+                     children: [
+                       Expanded(
+                         child: Text(
+                           field.value?.isNotEmpty == true
+                               ? field.value!
+                               : hintText,
+                           maxLines: 1,
+                           overflow: TextOverflow.ellipsis,
+                           style: field.value?.isNotEmpty == true
+                               ? theme.textTheme.bodyLarge
+                               : theme.textTheme.bodyLarge?.copyWith(
+                                   color: theme.colorScheme.onSurfaceVariant,
+                                 ),
+                         ),
+                       ),
+                       const SizedBox(width: 12),
+                       const Icon(Icons.expand_more_rounded),
+                     ],
+                   ),
+                 ),
+               ),
+               if (selectedCategory != null) ...[
+                 const SizedBox(height: 8),
+                 Text(
+                   selectedCategory.examples,
+                   style: theme.textTheme.bodySmall?.copyWith(
+                     color: theme.colorScheme.onSurfaceVariant,
+                     height: 1.35,
+                   ),
+                 ),
+               ],
+             ],
+           );
+         },
+       );
 }
 
 class ServiceCategorySelectionSummary extends StatelessWidget {
@@ -177,7 +179,7 @@ class ServiceCategorySelectionSummary extends StatelessWidget {
         Text(title, style: theme.textTheme.titleLarge),
         const SizedBox(height: 6),
         Text(
-          subtitle,
+          _withoutTrailingDot(subtitle),
           style: theme.textTheme.bodyMedium?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
           ),
@@ -250,7 +252,9 @@ class _ServiceCategoryMultiSelectSheetState
               Text(widget.title, style: theme.textTheme.titleLarge),
               const SizedBox(height: 8),
               Text(
-                'Отмеченные категории будут использоваться для подписок и быстрой фильтрации.',
+                _withoutTrailingDot(
+                  'Отмеченные категории будут использоваться для подписок и быстрой фильтрации.',
+                ),
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
@@ -289,9 +293,8 @@ class _ServiceCategoryMultiSelectSheetState
                   const SizedBox(width: 12),
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () => Navigator.of(context).pop(
-                        _selectedTitles.toList(),
-                      ),
+                      onPressed: () =>
+                          Navigator.of(context).pop(_selectedTitles.toList()),
                       child: const Text('Готово'),
                     ),
                   ),
@@ -359,10 +362,7 @@ class _ServiceCategoryTile extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      title,
-                      style: theme.textTheme.titleMedium,
-                    ),
+                    Text(title, style: theme.textTheme.titleMedium),
                     const SizedBox(height: 6),
                     Text(
                       subtitle,
@@ -388,4 +388,12 @@ class _ServiceCategoryTile extends StatelessWidget {
       ),
     );
   }
+}
+
+String _withoutTrailingDot(String value) {
+  final trimmedRight = value.trimRight();
+  if (!trimmedRight.endsWith('.')) {
+    return value;
+  }
+  return trimmedRight.substring(0, trimmedRight.length - 1);
 }
